@@ -45,9 +45,12 @@ void NVIC_Configuration(void);
 void Delay(__IO uint32_t nCount);
 void Serial_Init(void);	
 /* Private functions ---------------------------------------------------------*/
-	uint16_t count,count1,tmpb,tmpa,k;
-	uint8_t buff[10020];
-			uint8_t a0,a1,a2,b,tmpc,dmaval;
+	uint16_t count,count1,tmpb,tmpa,tmpc,k;
+	uint8_t buff[13000];
+			uint8_t a0,a1,a2,b,dmaval;
+	uint16_t pa[12]={0,1,2,4,5,6,7,8,11,12,14,15};
+	uint16_t pb[8]={0,1,3,4,5,6,7,10};
+	uint16_t pc[12]={0,1,2,3,4,5,6,7,8,10,11,12};
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -92,7 +95,7 @@ if (count >= 2808) {	  GPIO_SetBits(GPIOB, GPIO_Pin_12);//Delay(60);
     dma.DMA_PeripheralBaseAddr = (uint32_t)(&(SPI2->DR));
     dma.DMA_MemoryBaseAddr = (uint32_t)buff;
     dma.DMA_DIR = DMA_DIR_PeripheralSRC;
-    dma.DMA_BufferSize = l1*25*4+5;
+    dma.DMA_BufferSize = l1*32*4+5;
     dma.DMA_M2M = DMA_M2M_Disable;
      dma.DMA_MemoryDataSize = DMA_MemoryDataSize_Byte;
      dma.DMA_MemoryInc = DMA_MemoryInc_Enable;
@@ -119,27 +122,47 @@ void RCC_Configuration(void)
 }
 void calc_rgb(uint8_t b,uint8_t dot,uint8_t col)
 {
-	uint16_t a[9];
+	uint16_t a[12];
+
 	uint16_t i,tmp;
 
 	tmp=(1<<b);
 
-for (i=0;i<9;i++)
+for (i=0;i<12;i++)
 {
-a[i]=(buff[4+dot*4+col+i*l1*4]&tmp)>>(b);
+a[i]=(buff[4+dot*4+col+i*l1*4]&tmp)>>b;
 }
-tmpa=(a[0]|(a[1]<<1)|(a[2]<<2)|(a[3]<<3)|(a[4]<<4)|(a[5]<<5)|(a[6]<<6)|(a[7]<<7)|(a[8]<<8));
+tmpa=0;
+for (i=0;i<12;i++)
+{
+	tmpa=tmpa|(a[i]<<pa[i]);
+}
 tmpa=~tmpa;
-for (i=9;i<17;i++)
+
+for (i=12;i<20;i++)
 {
-a[i-9]=(buff[4+dot*4+col+i*l1*4]&tmp)>>(b);
+a[i-12]=(buff[4+dot*4+col+i*l1*4]&tmp)>>b;
 }
-tmpc=(a[0]|(a[1]<<1)|(a[2]<<2)|(a[3]<<3)|(a[4]<<4)|(a[5]<<5)|(a[6]<<6)|(a[7]<<7));tmpc=~tmpc;
-for (i=17;i<25;i++)
+tmpb=0;
+for (i=0;i<8;i++)
 {
-a[i-17]=(buff[4+dot*4+col+i*l1*4]&tmp)>>(b);
+	tmpb=tmpb|(a[i]<<pb[i]);
 }
-tmpb=(~((a[0]|(a[1]<<1)|(a[2]<<2)|(a[3]<<3)|(a[4]<<4)|(a[5]<<5)|(a[6]<<6)|(a[7]<<7)))|0x000);
+tmpb=~tmpb;
+
+
+for (i=20;i<32;i++)
+{
+a[i-20]=(buff[4+dot*4+col+i*l1*4]&tmp)>>b;
+}
+tmpc=0;
+for (i=0;i<12;i++)
+{
+	tmpc=tmpc|(a[i]<<pc[i]);
+}
+tmpc=~tmpc;
+
+
 }
 
 
@@ -158,9 +181,9 @@ GPIO_Write( GPIOB, 0x0000|ss);
 Delay(del_0);	
 	if ((m&tmp)==0) 	
 	{	
-GPIO_Write( GPIOA, 0x1FF);
-GPIO_Write( GPIOC, 0xFF);
-GPIO_Write( GPIOB, 0xFF|ss);
+GPIO_Write( GPIOA, 0xFFFF);
+GPIO_Write( GPIOC, 0xFFFF);
+GPIO_Write( GPIOB, 0xFFFF|ss);
 	}
 	else 
 	{
@@ -170,10 +193,10 @@ GPIO_Write( GPIOB, 0x0000|ss);
 Delay(del_1);	
 	}
 	tmp=tmp<<1;
-GPIO_Write( GPIOA, 0x1FF);
-GPIO_Write( GPIOC, 0xFF);
-GPIO_Write( GPIOB, 0xFF|ss);
-Delay(52);
+GPIO_Write( GPIOA, 0xFFFF);
+GPIO_Write( GPIOC, 0xFFFF);
+GPIO_Write( GPIOB, 0xFFFF|ss);
+Delay(22);
 	}
 	
 
@@ -187,9 +210,9 @@ GPIO_Write( GPIOB, 0x0000|ss);
 Delay(del_0);	
 	if ((n&tmp)==0) 	
 	{	
-GPIO_Write( GPIOA, 0x1FF);
-GPIO_Write( GPIOC, 0xFF);
-GPIO_Write( GPIOB, 0xFF|ss);
+GPIO_Write( GPIOA, 0xFFFF);
+GPIO_Write( GPIOC, 0xFFFF);
+GPIO_Write( GPIOB, 0xFFFF|ss);
 	}
 	else 
 	{
@@ -199,10 +222,10 @@ GPIO_Write( GPIOB, 0x0000|ss);
 Delay(del_1);	
 	}
 	tmp=tmp<<1;
-GPIO_Write( GPIOA, 0x1FF);
-GPIO_Write( GPIOC, 0xFF);
-GPIO_Write( GPIOB, 0xFF|ss);
-Delay(52);
+GPIO_Write( GPIOA, 0xFFFF);
+GPIO_Write( GPIOC, 0xFFFF);
+GPIO_Write( GPIOB, 0xFFFF|ss);
+Delay(22);
 	}
 
 	m=0x00;
@@ -215,9 +238,9 @@ GPIO_Write( GPIOB, 0x0000|ss);
 Delay(del_0);	
 	if ((m&tmp)==0) 	
 	{	
-GPIO_Write( GPIOA, 0x1FF);
-GPIO_Write( GPIOC, 0xFF);
-GPIO_Write( GPIOB, 0xFF|ss);
+GPIO_Write( GPIOA, 0xFFFF);
+GPIO_Write( GPIOC, 0xFFFF);
+GPIO_Write( GPIOB, 0xFFFF|ss);
 	}
 	else 
 	{
@@ -227,10 +250,10 @@ GPIO_Write( GPIOB, 0x0000|ss);
 Delay(del_1);	
 	}
 	tmp=tmp<<1;
-GPIO_Write( GPIOA, 0x1FF);
-GPIO_Write( GPIOC, 0xFF);
-GPIO_Write( GPIOB, 0xFF|ss);
-Delay(52);
+GPIO_Write( GPIOA, 0xFFFF);
+GPIO_Write( GPIOC, 0xFFFF);
+GPIO_Write( GPIOB, 0xFFFF|ss);
+Delay(22);
 	}
 
 
@@ -248,10 +271,10 @@ GPIO_Write( GPIOA, tmpa);
 GPIO_Write( GPIOC, tmpc);
 GPIO_Write( GPIOB, tmpb|ss);
 Delay(del_1);	
-GPIO_Write( GPIOA, 0x1FF);
-GPIO_Write( GPIOC, 0xFF);
-GPIO_Write( GPIOB, 0xFF|ss);
-Delay(42);
+GPIO_Write( GPIOA, 0xFFFF);
+GPIO_Write( GPIOC, 0xFFFF);
+GPIO_Write( GPIOB, 0xFFFF|ss);
+Delay(22);
 	}
 }
 Delay(del_0);	
@@ -259,10 +282,10 @@ GPIO_Write( GPIOA, 0x0);
 GPIO_Write( GPIOC, 0x0);
 GPIO_Write( GPIOB, 0x00|ss);
 Delay(180);		//210
-GPIO_Write( GPIOA, 0x1FF);
-GPIO_Write( GPIOC, 0xFF);
-GPIO_Write( GPIOB, 0xFF|ss);
-Delay(340);	//170
+GPIO_Write( GPIOA, 0xFFFF);
+GPIO_Write( GPIOC, 0xFFFF);
+GPIO_Write( GPIOB, 0xFFFF|ss);
+Delay(220);	//170
 	///////////////////////////g
 	///////////////////////////
 
@@ -415,12 +438,12 @@ GPIO_Write( GPIOB, 0x0000);
 	//		GPIO_ResetBits(GPIOB, GPIO_Pin_0);
 
 Delay(180);		
-GPIO_Write( GPIOA, 0x1FF);
-GPIO_Write( GPIOC, 0xFF);
-GPIO_Write( GPIOB, 0x00FF);
+GPIO_Write( GPIOA, 0xFFFF);
+GPIO_Write( GPIOC, 0xFFFF);
+GPIO_Write( GPIOB, 0xFFF);
 		//	GPIO_SetBits(GPIOB, GPIO_Pin_0);
 
-Delay(340);	
+Delay(280);	
 
 }
 ////////////////////
@@ -539,7 +562,7 @@ GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable, ENABLE);
 	
 	
 
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_7;
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_7|GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_10;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
   GPIO_Init(GPIOB, &GPIO_InitStructure);
@@ -549,12 +572,12 @@ GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable, ENABLE);
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
   GPIO_Init(GPIOB, &GPIO_InitStructure);
 
- GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_7;
+ GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_7|GPIO_Pin_8|GPIO_Pin_10|GPIO_Pin_11|GPIO_Pin_12;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
   GPIO_Init(GPIOC, &GPIO_InitStructure);
 
-GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_3|GPIO_Pin_4|GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_7|GPIO_Pin_8;
+GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0|GPIO_Pin_1|GPIO_Pin_2|GPIO_Pin_4|GPIO_Pin_5|GPIO_Pin_6|GPIO_Pin_7|GPIO_Pin_8|GPIO_Pin_12|GPIO_Pin_11|GPIO_Pin_14|GPIO_Pin_15;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
   GPIO_Init(GPIOA, &GPIO_InitStructure);
